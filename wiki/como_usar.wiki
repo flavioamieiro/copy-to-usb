@@ -1,5 +1,4 @@
-=Heading1=
-Como usar o Copy to usb
+=Como usar o Copy to usb=
 
 Para usar este script basta coloca-lo na pasta ~/.gnome2/nautilus-scripts e dar-lhe permissão de execução com o seguinte comando:
 {{{
