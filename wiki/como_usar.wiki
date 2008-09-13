@@ -1,10 +1,10 @@
-=Como usar o Copy to usb=
+=How to use Copy to usb=
 
-Para usar este script basta coloca-lo na pasta ~/.gnome2/nautilus-scripts e dar-lhe permissão de execução com o seguinte comando:
+To use this script all you have to do is put it in .gnome2/nautilus-scripts/ (located inside your home folder) and give it permission to be executed using the following command:
 {{{
-chmod +x _nomedoarquivo_
+chmod +x _filename_
 }}}
 
-onde _nomedoarquivo_ é o nome do script (você pode renomeá-lo se quiser, mas o padrão é `copy_to_usb-`_versão_).
+where _filename_ is the name of the script (you may rename it as you will, but the default name is `copy_to_usb-`_version_).
 
-Depois disso, o script vai aparecer no menu de contexto quando clicar com o botão direito sobre algum arquivo.
+After following these steps, a "script" menu should appear in the context menu when you right-click on any file. Navigating inside it you should find Copy to usb. Now you just need to click it.
