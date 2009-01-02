@@ -2,7 +2,7 @@
 #
 # Copy to usb - Copia os arquivos selecionados para um dispositivo usb.
 #
-# Autor: Flávio Amieiro <amieiro.flavio@gmail.com>s
+# Autor: Flávio Amieiro <amieiro.flavio@gmail.com>
 #
 #
 # Versão 0.1 - Aparentemente funcional. Ainda não tenho muita certeza da
@@ -26,17 +26,15 @@
 #              Corrigido nome do diretório padrão no diálogo de seleção de
 #              arquivos (estava como "/media", passou a ser "/media/", o correto)
 #
+# Versão 0.6 - Se mais de um ponto de montagem for detectado automaticamente, 
+#              mostra uma lista para o usuário escolher. Isso ainda não funciona
+#              para casos em que o nome do ponto de montagem tenha espaços.
+#              mas isso não deve atrapalhar para pen-drives montados automatica-
+#              mente.
+#              Adiciona um diálogo final, mostrando quantos arquivos foram
+#              copiados, e para qual diretório.
 #
-
-
-# Diretório para o qual serão enviados os arquivos. Como se pode ver pelo
-# histórico de versões, essa solução ainda não me convence.
-DIR=$(cat /etc/mtab | grep '/dev/sd..' | grep /media | cut -d' ' -f2)
-
-# Arquivo temporário onde são armazenados os nomes dos arquivos
-# selecionados:
-TMP_FILE="/tmp/copytousb.tmp"
-
+#
 
 # Verificando se algum arquivo foi selecionado:
 if [ "$NAUTILUS_SCRIPT_SELECTED_FILE_PATHS" = "" ]
@@ -44,6 +42,28 @@ then
     zenity --info --text="Nenhum arquivo selecionado"
     exit 1
 fi
+
+# Diretório para o qual serão enviados os arquivos. Como se pode ver pelo
+# histórico de versões, essa solução ainda não me convence.
+DIR_TRY=$(cat /etc/mtab | grep '/dev/sd..' | grep /media | cut -d' ' -f2)
+
+COUNT_DIR=$(echo "$DIR_TRY" | wc -l)
+
+if [ $COUNT_DIR -gt 1 ]
+then
+    DIR=$(zenity --list --text "Mais de um ponto de montagem possível foi encontrado.\ 
+Escolha um deles." --column "Ponto de montagem:" $DIR_TRY)
+else
+    DIR="$DIR_TRY"
+fi
+
+#DIR=$(echo "Não existe") #só pra não copiar
+
+# Arquivo temporário onde são armazenados os nomes dos arquivos
+# selecionados:
+TMP_FILE="/tmp/copytousb.tmp"
+
+
 
 # Gravando o nome dos arquivos selecionados no arquivo temporário:
 echo "$NAUTILUS_SCRIPT_SELECTED_FILE_PATHS" > "$TMP_FILE"
@@ -80,19 +100,30 @@ fi
 # Lendo cada linha do arquivo temporário, atribuindo o valor lido à variável
 # arquivo_atual, e copiando esse arquivo para a pasta de destino.
 # Em caso de erro, um diálogo mostra os arquivos que não foram copiados
+COUNT_FILES=0
 while read LINHA; do
     [ "$LINHA" ] || continue # ignora linhas vazias
     arquivo_atual="$LINHA"
     if test -f "$arquivo_atual" # se for um arquivo...
     then
-        cp "$arquivo_atual" "$DIR" || zenity --error \
+        cp "$arquivo_atual" "$DIR" && COUNT_FILES=$(($COUNT_FILES+1)) || zenity --error \
         --text="Não foi possível copiar o arquivo $arquivo_atual."
     elif test -d "$arquivo_atual" # se for um diretório...
     then
-        cp -r "$arquivo_atual" "$DIR" || zenity --error \
+        cp -r "$arquivo_atual" "$DIR" && COUNT_FILES=$(($COUNT_FILES+1)) || zenity --error \
         --text="Não foi possível copiar o diretório $arquivo_atual."
     fi
 done < "$TMP_FILE"
+
+if [ $COUNT_FILES -gt 1 ]
+then
+    zenity --info --text "$COUNT_FILES arquivos copiados para $DIR"
+elif [ $COUNT_FILES -eq 1 ]
+then
+    zenity --info --text "$COUNT_FILES arquivo copiado para $DIR"
+else
+    zenity --info --text "Nenhum arquivo copiado para $DIR"
+fi
 
 # Removendo o arquivo temporário
 rm "$TMP_FILE"
