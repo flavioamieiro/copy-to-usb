@@ -2,8 +2,25 @@
 #
 # Copy to usb - Copia os arquivos selecionados para um dispositivo usb.
 #
-# Autor: Flávio Amieiro <amieiro.flavio@gmail.com>
+# Copyright (C) 2008 Flávio Amieiro <amieiro.flavio@gmail.com>
 #
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; version 2 dated June, 1991.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Library General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, see <http://www.gnu.org/licenses/>.
+#
+# If you find any bugs or have any suggestions email: amieiro.flavio@gmail.com
+#
+#
+#
+# Histórico de versões:
 #
 # Versão 0.1 - Aparentemente funcional. Ainda não tenho muita certeza da
 #              precisão do método de determinação do diretório de destino. 
@@ -39,7 +56,16 @@
 #              de cada arquivo ou diretório). A documentação do zenity é ridícula.
 #
 #
+# Versão 0.8 - Adicionada a possibilidade de determinar o caminho do ponto de
+#              montagem do dispositivo direto em um arquivo de configuração
+#              (~/.copytousbrc). Deve haver apenas um ponto de montagem 
+#              especificado, em uma linha. O arquivo aceita comentários
+#              delimitados pelo caractere #.
 #
+#
+
+# Arquivo de configuração:
+CONFIGFILE="$HOME/.copytousbrc"
 
 # Verificando se algum arquivo foi selecionado:
 if [ "$NAUTILUS_SCRIPT_SELECTED_FILE_PATHS" = "" ]
@@ -48,20 +74,27 @@ then
     exit 1
 fi
 
-# Diretório para o qual serão enviados os arquivos. Como se pode ver pelo
-# histórico de versões, essa solução ainda não me convence.
-DIR_TRY=$(cat /etc/mtab | grep '/dev/sd..' | grep /media | cut -d' ' -f2)
 
-COUNT_DIR=$(echo "$DIR_TRY" | wc -l)
-
-if [ $COUNT_DIR -gt 1 ]
+if test -f "$CONFIGFILE"
 then
-    DIR=$(zenity --list --text "Mais de um ponto de montagem possível foi encontrado.\ 
-Escolha um deles." --column "Ponto de montagem:" $DIR_TRY)
+    # Tratando o arquivo de configuração:
+    #       o arquivo       |   comentários  |      espaços      | linhas vazias
+    DIR=$(cat "$CONFIGFILE" | sed 's/#.*//g' | sed 's/^[^/]*//g' | sed '/^$/d')
 else
-    DIR="$DIR_TRY"
-fi
+    # Encontrando automaticamente o diretório para o qual serão enviados os 
+    # arquivos. Essa solução ainda não me convence.
+    DIR_TRY=$(cat /etc/mtab | grep '/dev/sd..' | grep /media | cut -d' ' -f2)
 
+    COUNT_DIR=$(echo "$DIR_TRY" | wc -l)
+
+    if [ $COUNT_DIR -gt 1 ]
+    then
+        DIR=$(zenity --list --text "Mais de um ponto de montagem possível foi encontrado.\ 
+    Escolha um deles." --column "Ponto de montagem:" $DIR_TRY)
+    else
+        DIR="$DIR_TRY"
+    fi
+fi
 #DIR=$(echo "Não existe") #só pra não copiar
 
 # Arquivo temporário onde são armazenados os nomes dos arquivos
@@ -84,8 +117,7 @@ else
     # de montagem do dispositivo. Retorna a variável $ESCOLHER com "ok" ou
     # "cancel", dependendo do que o usuário escolher.
     ESCOLHER=$(zenity --question --title="Copy to usb" --text="O dispositivo de \
-destino não foi encontrado automaticamente.\nDeseja procurar o ponto de \
-montagem manualmente?" \
+destino não foi encontrado.\nDeseja procurar o ponto de montagem manualmente?" \
     && echo "ok" \
     || echo "cancel")
     
