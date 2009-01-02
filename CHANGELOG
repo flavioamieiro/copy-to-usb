@@ -1,0 +1,41 @@
+Histórico de versões:
+
+Versão 0.1 - Aparentemente funcional. Ainda não tenho muita certeza da
+            precisão do método de determinação do diretório de destino. 
+            Ainda bastante baseado em POG.
+
+Versão 0.2 - Modificado o método de determinação do diretório de destino.
+            Agora o script procura por /dev/sd** (na versão anterior estava
+            preso ao sdb*, então pontos pela generalização) que tenha seu
+            ponto de montagem em /media (padrão pelo menos no Ubuntu e no
+            Fedora). Ainda não me convenceu.
+            Confere se o diretório de destino existe. Se não, mostra um erro.
+
+Versão 0.3 - Adicionado suporte a diretórios.
+
+Versão 0.4 - Caso o dispositivo não seja encontrado automaticamente, dá ao
+            usuário a opção de indicar o caminho dele.
+
+Versão 0.5 - Verifica se algum arquivo foi selecionado. Caso contrário, exibe
+            um aviso e termina com status 1.
+            Corrigido nome do diretório padrão no diálogo de seleção de
+            arquivos (estava como "/media", passou a ser "/media/", o correto)
+
+Versão 0.6 - Se mais de um ponto de montagem for detectado automaticamente, 
+            mostra uma lista para o usuário escolher. Isso ainda não funciona
+            para casos em que o nome do ponto de montagem tenha espaços.
+            mas isso não deve atrapalhar para pen-drives montados automatica-
+            mente.
+            Adiciona um diálogo final, mostrando quantos arquivos foram
+            copiados, e para qual diretório.
+
+Versão 0.7 - Adicionada uma barra de progresso. Ainda não funciona muito bem,
+            por que só anda no final de cada operação (i.e. no final da cópia
+            de cada arquivo ou diretório). A documentação do zenity é ridícula.
+
+
+Versão 0.8 - Adicionada a possibilidade de determinar o caminho do ponto de
+            montagem do dispositivo direto em um arquivo de configuração
+            (~/.copytousbrc). Deve haver apenas um ponto de montagem 
+            especificado, em uma linha. O arquivo aceita comentários
+            delimitados pelo caractere #.
