@@ -2,7 +2,7 @@
 #
 # Copy to usb - Copia os arquivos selecionados para um dispositivo usb.
 #
-# Autor: Flávio Amieiro
+# Autor: Flávio Amieiro <amieiro.flavio@gmail.com>s
 #
 #
 # Versão 0.1 - Aparentemente funcional. Ainda não tenho muita certeza da
@@ -21,6 +21,11 @@
 # Versão 0.4 - Caso o dispositivo não seja encontrado automaticamente, dá ao
 #              usuário a opção de indicar o caminho dele.
 #
+# Versão 0.5 - Verifica se algum arquivo foi selecionado. Caso contrário, exibe
+#              um aviso e termina com status 1.
+#              Corrigido nome do diretório padrão no diálogo de seleção de
+#              arquivos (estava como "/media", passou a ser "/media/", o correto)
+#
 #
 
 
@@ -32,6 +37,13 @@ DIR=$(cat /etc/mtab | grep '/dev/sd..' | grep /media | cut -d' ' -f2)
 # selecionados:
 TMP_FILE="/tmp/copytousb.tmp"
 
+
+# Verificando se algum arquivo foi selecionado:
+if [ "$NAUTILUS_SCRIPT_SELECTED_FILE_PATHS" = "" ]
+then
+    zenity --info --text="Nenhum arquivo selecionado"
+    exit 1
+fi
 
 # Gravando o nome dos arquivos selecionados no arquivo temporário:
 echo "$NAUTILUS_SCRIPT_SELECTED_FILE_PATHS" > "$TMP_FILE"
@@ -58,7 +70,7 @@ montagem manualmente?" \
     then
         DIR=$(zenity --file-selection --title="Copy to usb - escolha o ponto de \
 montagem" \
-        --directory --filename="/media")
+        --directory --filename="/media/")
     else
         exit 1
     fi
