@@ -16,6 +16,7 @@
 #              Fedora). Ainda não me convenceu.
 #              Confere se o diretório de destino existe. Se não, mostra um erro.
 #
+# Versão 0.3 - Adicionado suporte a diretórios.
 #
 
 # Diretório para o qual serão enviados os arquivos. Como se pode ver pelo
@@ -42,8 +43,15 @@ de destino. Verifique se o dispositivo está conectado e montado."
 while read LINHA; do
     [ "$LINHA" ] || continue # ignora linhas vazias
     arquivo_atual="$LINHA"
-    cp "$arquivo_atual" "$DIR" || zenity --error \
-    --text="Não foi possível copiar o arquivo $arquivo_atual."
+    if test -f "$arquivo_atual" # se for um arquivo...
+    then
+        cp "$arquivo_atual" "$DIR" || zenity --error \
+        --text="Não foi possível copiar o arquivo $arquivo_atual."
+    elif test -d "$arquivo_atual" # se for um diretório...
+    then
+        cp -r "$arquivo_atual" "$DIR" || zenity --error \
+        --text="Não foi possível copiar o diretório $arquivo_atual."
+    fi
 done < "$TMP_FILE"
 
 # Removendo o arquivo temporário
