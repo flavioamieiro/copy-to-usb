@@ -18,6 +18,11 @@
 #
 # Versão 0.3 - Adicionado suporte a diretórios.
 #
+# Versão 0.4 - Caso o dispositivo não seja encontrado automaticamente, dá ao
+#              usuário a opção de indicar o caminho dele.
+#
+#
+
 
 # Diretório para o qual serão enviados os arquivos. Como se pode ver pelo
 # histórico de versões, essa solução ainda não me convence.
@@ -32,10 +37,33 @@ TMP_FILE="/tmp/copytousb.tmp"
 echo "$NAUTILUS_SCRIPT_SELECTED_FILE_PATHS" > "$TMP_FILE"
 
 
-# Testando para ver se o diretório de destino existe:
-echo "$DIR"
-test -d "$DIR" || zenity --error --text="Não foi possível encontrar o diretório \
-de destino. Verifique se o dispositivo está conectado e montado."
+# Testando para ver se o diretório de destino existe. Se não existir, dá ao
+# usuário a opção de escolher o caminho correto.
+if test -d "$DIR"
+then
+    echo "O dispositivo de destino existe"
+else
+    # Diálogo que pergunta ao usuário se ele quer escolher manualmente o ponto
+    # de montagem do dispositivo. Retorna a variável $ESCOLHER com "ok" ou
+    # "cancel", dependendo do que o usuário escolher.
+    ESCOLHER=$(zenity --question --title="Copy to usb" --text="O dispositivo de \
+destino não foi encontrado automaticamente.\nDeseja procurar o ponto de \
+montagem manualmente?" \
+    && echo "ok" \
+    || echo "cancel")
+    
+    # Se o usuário quiser escolher o ponto de montagem, mostra um diálogo para
+    # isso, caso contrário, termina o programa com status 1.
+    if test $ESCOLHER = ok
+    then
+        DIR=$(zenity --file-selection --title="Copy to usb - escolha o ponto de \
+montagem" \
+        --directory --filename="/media")
+    else
+        exit 1
+    fi
+fi
+
 
 # Lendo cada linha do arquivo temporário, atribuindo o valor lido à variável
 # arquivo_atual, e copiando esse arquivo para a pasta de destino.
