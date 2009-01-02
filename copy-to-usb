@@ -8,10 +8,19 @@
 # Versão 0.1 - Aparentemente funcional. Ainda não tenho muita certeza da
 #              precisão do método de determinação do diretório de destino. 
 #              Ainda bastante baseado em POG.
+#
+# Versão 0.2 - Modificado o método de determinação do diretório de destino.
+#              Agora o script procura por /dev/sd** (na versão anterior estava
+#              preso ao sdb*, então pontos pela generalização) que tenha seu
+#              ponto de montagem em /media (padrão pelo menos no Ubuntu e no
+#              Fedora). Ainda não me convenceu.
+#              Confere se o diretório de destino existe. Se não, mostra um erro.
+#
+#
 
-# Diretório para o qual serão enviados os arquivos. Edite esta linha de acordo
-# com a sua necessidade
-DIR=`cat /etc/mtab | grep sdb1 | cut -d' ' -f2`
+# Diretório para o qual serão enviados os arquivos. Como se pode ver pelo
+# histórico de versões, essa solução ainda não me convence.
+DIR=$(cat /etc/mtab | grep '/dev/sd..' | grep /media | cut -d' ' -f2)
 
 # Arquivo temporário onde são armazenados os nomes dos arquivos
 # selecionados:
@@ -22,14 +31,19 @@ TMP_FILE="/tmp/copytousb.tmp"
 echo "$NAUTILUS_SCRIPT_SELECTED_FILE_PATHS" > "$TMP_FILE"
 
 
+# Testando para ver se o diretório de destino existe:
+echo "$DIR"
+test -d "$DIR" || zenity --error --text="Não foi possível encontrar o diretório \
+de destino. Verifique se o dispositivo está conectado e montado."
+
 # Lendo cada linha do arquivo temporário, atribuindo o valor lido à variável
 # arquivo_atual, e copiando esse arquivo para a pasta de destino.
 # Em caso de erro, um diálogo mostra os arquivos que não foram copiados
 while read LINHA; do
     [ "$LINHA" ] || continue # ignora linhas vazias
     arquivo_atual="$LINHA"
-    cp "$arquivo_atual" "$DIR" || zenity --warning \
-    --text="Não foi possível copiar o arquivo $arquivo_atual. \nProvavelmente o diretório de destino nao foi encontrado"
+    cp "$arquivo_atual" "$DIR" || zenity --error \
+    --text="Não foi possível copiar o arquivo $arquivo_atual."
 done < "$TMP_FILE"
 
 # Removendo o arquivo temporário
