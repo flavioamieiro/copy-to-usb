@@ -34,6 +34,11 @@
 #              Adiciona um diálogo final, mostrando quantos arquivos foram
 #              copiados, e para qual diretório.
 #
+# Versão 0.7 - Adicionada uma barra de progresso. Ainda não funciona muito bem,
+#              por que só anda no final de cada operação (i.e. no final da cópia
+#              de cada arquivo ou diretório). A documentação do zenity é ridícula.
+#
+#
 #
 
 # Verificando se algum arquivo foi selecionado:
@@ -106,24 +111,32 @@ while read LINHA; do
     arquivo_atual="$LINHA"
     if test -f "$arquivo_atual" # se for um arquivo...
     then
+        echo "# Copiando $arquivo_atual"
         cp "$arquivo_atual" "$DIR" && COUNT_FILES=$(($COUNT_FILES+1)) || zenity --error \
         --text="Não foi possível copiar o arquivo $arquivo_atual."
+        echo $COUNT_FILES
     elif test -d "$arquivo_atual" # se for um diretório...
     then
+        echo "# Copiando $arquivo_atual"
         cp -r "$arquivo_atual" "$DIR" && COUNT_FILES=$(($COUNT_FILES+1)) || zenity --error \
         --text="Não foi possível copiar o diretório $arquivo_atual."
+        echo $COUNT_FILES
     fi
-done < "$TMP_FILE"
+    
+    # Mostra a mensagem final.
+    if [ $COUNT_FILES -gt 1 ]
+    then
+        echo "# $COUNT_FILES arquivos copiados para $DIR"
+    elif [ $COUNT_FILES -eq 1 ]
+    then
+        echo "# $COUNT_FILES arquivo copiado para $DIR"
+    elif [ $COUNT_FILES -eq 0 ]
+    then
+        echo "# Nenhum arquivo copiado para $DIR"
+    fi
 
-if [ $COUNT_FILES -gt 1 ]
-then
-    zenity --info --text "$COUNT_FILES arquivos copiados para $DIR"
-elif [ $COUNT_FILES -eq 1 ]
-then
-    zenity --info --text "$COUNT_FILES arquivo copiado para $DIR"
-else
-    zenity --info --text "Nenhum arquivo copiado para $DIR"
-fi
+done < "$TMP_FILE" | zenity --progress --auto-kill --title "Copy to usb" --pulsate
+
 
 # Removendo o arquivo temporário
 rm "$TMP_FILE"
