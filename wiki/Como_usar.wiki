@@ -2,7 +2,7 @@
 
 = Como Usar o Copy_to_usb =
 
-Para usar esse script tudo o que você precisa fazer é coloca-lo no diretório .gnome2/nautilus-scripts/ (localizado na sua pasta pessoal) e dar a ele permissão para ser executado através do seguinte comando:
+Para usar esse script tudo o que você precisa fazer é (depois de fazer o download [http://code.google.com/p/copy-to-usb/downloads/list aqui]) coloca-lo no diretório .gnome2/nautilus-scripts/ (localizado na sua pasta pessoal) e dar a ele permissão para ser executado através do seguinte comando:
 
 {{{
 chmod +x _nomedoarquivo_
