@@ -1,0 +1,1 @@
+Este Nautilus-script copia os arquivos selecionados para um dispositivo usb conectado. Se o dispositivo não for detectado automaticamente, o script vai perguntar qual o diretório de destino. Você pode também usar um arquivo de configuração para determinar qual o ponto de montagem do dispositivo.
